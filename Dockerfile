@@ -1,20 +1,18 @@
-name: vps
- 
-# Controls when the workflow will run
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
- 
-jobs:
-  build:
-    runs-on: ubuntu-latest
- 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
- 
-      - name: Run VPS
-        run: curl -sSf https://sshx.io/get | sh -s run
+FROM ubuntu:22.04
+
+# Install dependencies
+RUN apt update && \
+    apt install -y software-properties-common wget curl git openssh-client tmate python3 && \
+    apt clean
+
+# Create a dummy index page to keep the service alive
+RUN mkdir -p /app && echo "Tmate Session Running..." > /app/index.html
+WORKDIR /app
+
+# Expose a fake web port to trick Railway into keeping container alive
+EXPOSE 6080
+
+# Start a dummy Python web server to keep Railway service active
+# and start tmate session
+CMD python3 -m http.server 6080 & \
+    tmate -F
